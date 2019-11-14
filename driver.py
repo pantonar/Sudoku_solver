@@ -16,6 +16,7 @@ import os
 #               DEFINE WORKING DIRECTORY                                       # 
 ################################################################################
 directory = r'/Users/pablo/Desktop/edx/artificial_intelligence/week8_sudoku'
+directory = r'C:\Users\Spare 3\Sudoku_solver'
 os.chdir(directory)
 
 ################################################################################
@@ -24,7 +25,9 @@ os.chdir(directory)
 sudoku_start_file       = open('data/sudokus_start.txt')
 sudoku_start            = sudoku_start_file.readlines()
 
-
+################################################################################
+#               FUNCTIONS AND CLASSESS                                        # 
+################################################################################
 class sudoku_board:
     """
     Class representing the Sudoku game. 
@@ -125,7 +128,7 @@ class csp_sudoku:
         domain = {}
         for variable in self.variables:
             if sudoku.board[variable] != 0:
-                domain.update({variable:sudoku.board[variable]})
+                domain.update({variable:[sudoku.board[variable]]})
             else:
                 domain.update({variable : [int(i) for i in sudoku.cols]})
         return domain
@@ -136,11 +139,11 @@ class csp_sudoku:
         that is all the tiles that must have a different value than the key
         """
         neighbours = {}
-        for variable in variables:
+        for variable in self.variables:
             letter  = variable[0]
             digit   = variable[1]
             n       = (int(digit)-1)//3
-            row     = (sudoku.rows.find(letter)-1)//3
+            row     = (sudoku.rows.find(letter))//3
             square  = []     
             
             for i in ['123','456','789'][n]:
@@ -149,7 +152,7 @@ class csp_sudoku:
                     
             neighbours.update({variable: set([letter + i for i in sudoku.cols] + 
                                              [i + digit for i in sudoku.rows] +
-                                             square)})
+                                             square) - set([variable,variable])})
         return neighbours
             
     def gen_binary_constraints(self):
@@ -166,7 +169,74 @@ csp.neighbours
 csp.constraints
 
       
-class AC3:
+def AC3(csp):
+    """
+    Implements an Arc Consistency algorithm on a CSP problem.
+    The CSP object has to be fed to the AC3 function, where:
+            1/ csp.variables    : is a list with all the variable names to be 
+                                  assigned to solve the CSP
+            2/ csp.domain       : is a dictionary, whose keys are csp.variables,
+                                  and gets the domain on which each variable value 
+                                  has to come from
+            3/ csp.constraints  : is a set of binary combinations of elements in 
+                                  csp.variables that hold constraints. Constraints
+                                  are assumed to be 'different than' (i.e. both
+                                  elements in each binary combination have to be 
+                                  different). Hence the argument is a binary CSP
+            4/ csp.neighbours   : a dictionary where the key gives a set of its
+                                  neighbours (variables that are related to it by
+                                  a constraint)
+    """
+    queue = csp.constraints
+    
+    while bool(queue):
+        pair        = queue.pop()
+        Xi          = pair[0]
+        domain_Xi   = csp.domain[Xi]
+        Xj          = pair[1]
+        domain_Xj   = csp.domain[Xj]
+        
+        if Revise(csp, Xi, Xj, domain_Xi, domain_Xj):
+            if bool(domain_Xi):
+                for x in (csp.neighbours[Xi] - {Xj}):
+                    queue.update([(x, Xi)])
+            else:
+                return False
+                   
+    return True
+                   
+def Revise(csp, Xi, Xj, domain_Xi, domain_Xj):
+    """ Returns True if the domain of Xi is revised """
+    revise = False
+    for x in domain_Xi:
+        if not any(x!=y for y in domain_Xj):
+            csp.domain[Xi].remove(x)
+            revise = True
+    return revise
+
+
+
+################################################################################
+#               SOLVE ALL SUDOKUS WITH AC3                                     # 
+################################################################################        
+solvable = {}         
+for string in sudoku_start:
+    sudoku = sudoku_board(string)
+    #sudoku.print_board()
+    csp = csp_sudoku(sudoku)
+    if AC3(csp):
+        if not any(len(csp.domain[key])>1 for key in csp.domain):
+            solvable.update({string : csp})
+    csp.domain
+    
+    
+string = list(solvable.keys())[0]
+solution = solvable[string]
+sudoku = sudoku_board(string)
+sudoku.print_board()
+sudoku_solved = sudoku  
+sudoku_solved.board = solution.domain
+sudoku_solved.print_board()
     
     
         
@@ -175,7 +245,7 @@ class AC3:
     
     
     
-    
+not any(len(solution.domain[key])>1 for key in solution.domain)
     
         
         
