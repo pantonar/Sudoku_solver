@@ -67,9 +67,11 @@ class sudoku_board:
         length = 0
         line        = str()
         delimiter   = str()
-        for key in self.board.keys():
-            
-            line += str(self.board[key])+' '
+        for key in self.board.keys():              
+            try:
+                line += str(self.board[key][0])+' '
+            except TypeError:
+                line += str(self.board[key])+' '
             if key[1] in '36':
                 line += '| '
             if  key[0] in 'CF':
@@ -80,7 +82,6 @@ class sudoku_board:
             
             if length == 9:
                 print(line)
-                a=line
                 length      = 0
                 line        = str()
                 if len(delimiter)>0:
@@ -237,12 +238,6 @@ sudoku.print_board()
 sudoku_solved = sudoku  
 sudoku_solved.board = solution.domain
 sudoku_solved.print_board()
-    
-    
-        
-    
-    
-    
     
     
 not any(len(solution.domain[key])>1 for key in solution.domain)
