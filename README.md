@@ -8,7 +8,7 @@ Backtracking implementation uses the following heuristics:
   2/ Forward check using arc-consistency: each assignment is checked against being arc-consistent. If not, backtrack.
   
   
- driver.py can be called from command line with a string of 81 characters, for the starting sudoku state
+ driver.py can be called from command line with a string of 81 characters as argument, for the starting sudoku state
  
  Folder data:
  Contains 400 starting sudokus and their solution, that I used to test the implementation
